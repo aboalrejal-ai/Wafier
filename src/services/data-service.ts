@@ -95,7 +95,17 @@ export async function signIn(email: string, password: string) {
 export async function signInWithGoogle() {
   const supabase = getSupabase();
   if (!supabase) {
-    return { error: new Error("Google يحتاج ربط قاعدة Wafir") };
+    const email = "demo@wafier.app";
+    const result = localLogin(email, "demo", true);
+    if (!result.ok) return { error: new Error(result.error) };
+    demoService.applyIdentity({
+      email: result.user.email,
+      full_name: result.user.name,
+      city: result.user.city || "الرياض",
+      member_since: result.user.createdAt,
+    });
+    setDemoSession(email);
+    return { error: null };
   }
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "google",

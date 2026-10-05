@@ -78,6 +78,10 @@ function LoginRoute() {
   const handleGoogle = async () => {
     const { error } = await signInWithGoogle();
     if (error) throw error;
+    if (!isSupabaseConfigured) {
+      await refreshSession();
+      navigate("/consent");
+    }
   };
 
   if (isDesktop) {
