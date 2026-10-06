@@ -26,7 +26,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (s?.user) {
       setUser(s.user);
       setSession(s);
-      const consent = localStorage.getItem("wafier_consent") === "true";
+      const demo = "id" in s.user && s.user.id === "demo-user";
+      if (demo) localStorage.setItem("wafier_consent", "true");
+      const consent = demo || localStorage.getItem("wafier_consent") === "true";
       setHasConsent(consent);
     } else {
       setUser(null);
