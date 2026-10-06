@@ -98,7 +98,7 @@ export default function DesktopLogin({ onLogin, onSignUp, onResetPassword, onGoo
             <button type="button" onClick={() => setShowForgot(true)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "hsl(var(--color-sa-600))", fontFamily: "inherit" }}>{t("login.forgotPassword")}</button>
           </div>
 
-          <button type="button" onClick={handleLogin} disabled={loading || !email || password.length < 4}
+          <button type="button" onClick={handleLogin} disabled={loading}
             style={{ width: "100%", padding: "15px", background: "#1B8354", border: "none", borderRadius: 14, cursor: "pointer", color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: "inherit", marginBottom: 16 }}>
             {loading ? t("common.loading") : t("login.signIn")}
           </button>

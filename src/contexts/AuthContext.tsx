@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (isSupabaseConfigured) {
       const supabase = getSupabase()!;
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+        if (localStorage.getItem("wafier_session")?.includes("demo-user")) return;
         setSession(s);
         setUser(s?.user ?? null);
         setLoading(false);

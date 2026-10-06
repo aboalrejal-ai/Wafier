@@ -25,7 +25,7 @@ import DesktopAIAssistant from "./components/desktop/DesktopAIAssistant";
 import Sidebar from "./components/desktop/Sidebar";
 import AppTopBar, { navigateToAppPage } from "./components/AppTopBar";
 import type { AppPage } from "./components/CommandPalette";
-import { signIn, signUp, resetPassword, signInWithGoogle, isSupabaseConfigured, getSession } from "./services/data-service";
+import { enterDemo, signUp, resetPassword, signInWithGoogle, isSupabaseConfigured, getSession } from "./services/data-service";
 import { useDashboard } from "./hooks/useDashboard";
 import { initPushRegistration } from "./lib/notification-distributor";
 
@@ -53,14 +53,10 @@ function LoginRoute() {
     navigate(hasConsent ? "/dashboard" : "/consent", { replace: true });
   }, [loading, user, hasConsent, navigate]);
 
-  const handleLogin = async (email: string, password: string) => {
-    const { user: signedIn, error } = await signIn(email, password);
-    if (error) throw error;
-    if (signedIn) {
-      if (!isSupabaseConfigured) setDemoSession(email);
-      await refreshSession();
-      navigate("/consent");
-    }
+  const handleLogin = async () => {
+    enterDemo();
+    await refreshSession();
+    navigate("/dashboard", { replace: true });
   };
 
   const handleSignUp = async (email: string, password: string, name: string) => {

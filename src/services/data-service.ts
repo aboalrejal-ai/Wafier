@@ -154,12 +154,27 @@ export async function resetPassword(email: string) {
   return { error };
 }
 
-export async function getSession() {
-  const supabase = getSupabase();
-  if (!supabase) {
-    const session = localStorage.getItem("wafier_session");
-    return session ? JSON.parse(session) : null;
+function readLocalSession() {
+  const raw = localStorage.getItem("wafier_session");
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as { user?: { id?: string; email?: string } };
+    return parsed?.user ? parsed : null;
+  } catch {
+    return null;
   }
+}
+
+function usingDemo() {
+  const local = readLocalSession();
+  return !isSupabaseConfigured || local?.user?.id === "demo-user";
+}
+
+export async function getSession() {
+  const local = readLocalSession();
+  if (local?.user?.id === "demo-user" || !isSupabaseConfigured) return local;
+  const supabase = getSupabase();
+  if (!supabase) return local;
   const { data } = await supabase.auth.getSession();
   return data.session;
 }
@@ -168,8 +183,22 @@ export function setDemoSession(email: string) {
   localStorage.setItem("wafier_session", JSON.stringify({ user: { email, id: "demo-user" } }));
 }
 
+const DEMO_EMAIL = "demo@wafier.app";
+
+/** Opens the local demo as a signed-in user. No email, password, or remote auth. */
+export function enterDemo() {
+  demoService.applyIdentity({
+    email: DEMO_EMAIL,
+    full_name: "مستخدم وفير",
+    city: "الرياض",
+  });
+  demoService.setConsent();
+  setDemoSession(DEMO_EMAIL);
+  localStorage.setItem("wafier_consent", "true");
+}
+
 export async function fetchDashboard(): Promise<DashboardData> {
-  if (!isSupabaseConfigured) {
+  if (usingDemo()) {
     return demoService.refreshDashboard();
   }
 
@@ -224,7 +253,7 @@ export async function fetchDashboard(): Promise<DashboardData> {
 }
 
 export async function updateBudget(amount: number) {
-  if (!isSupabaseConfigured) return demoService.setBudget(amount);
+  if (usingDemo()) return demoService.setBudget(amount);
   const supabase = getSupabase()!;
   const { data: { user } } = await supabase.auth.getUser();
   const { data: household } = await supabase.from("households").select("id").eq("user_id", user!.id).maybeSingle();
@@ -235,7 +264,7 @@ export async function updateBudget(amount: number) {
 }
 
 export async function updateProfile(data: Partial<Profile>) {
-  if (!isSupabaseConfigured) {
+  if (usingDemo()) {
     demoService.updateProfile(data);
     return;
   }
@@ -245,7 +274,7 @@ export async function updateProfile(data: Partial<Profile>) {
 }
 
 export async function setConsent() {
-  if (!isSupabaseConfigured) {
+  if (usingDemo()) {
     demoService.setConsent();
     return;
   }
@@ -255,7 +284,7 @@ export async function setConsent() {
 }
 
 export async function runEvaluationScenario() {
-  if (!isSupabaseConfigured) return demoService.simulateHeatwave();
+  if (usingDemo()) return demoService.simulateHeatwave();
   const supabase = getSupabase()!;
   const { data: { user } } = await supabase.auth.getUser();
   const { data: household } = await supabase.from("households").select("id").eq("user_id", user!.id).maybeSingle();
@@ -267,22 +296,22 @@ export async function runEvaluationScenario() {
 }
 
 export async function runScenarioHeatwave() {
-  if (!isSupabaseConfigured) return demoService.simulateHeatwave();
+  if (usingDemo()) return demoService.simulateHeatwave();
   return runEvaluationScenario();
 }
 
 export async function runScenarioDataGap() {
-  if (!isSupabaseConfigured) return demoService.simulateDataGap();
+  if (usingDemo()) return demoService.simulateDataGap();
   return fetchDashboard();
 }
 
 export async function runScenarioAdsControversy() {
-  if (!isSupabaseConfigured) return demoService.simulateAdsControversy();
+  if (usingDemo()) return demoService.simulateAdsControversy();
   return fetchDashboard();
 }
 
 export async function runScenarioCompliantRag() {
-  if (!isSupabaseConfigured) return demoService.simulateCompliantRag();
+  if (usingDemo()) return demoService.simulateCompliantRag();
   return fetchDashboard();
 }
 

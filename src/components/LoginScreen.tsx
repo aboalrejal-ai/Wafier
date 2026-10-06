@@ -78,7 +78,7 @@ export default function LoginScreen({ onLogin, onSignUp, onResetPassword, onGoog
           <button type="button" onClick={() => setShowForgot(true)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "hsl(var(--color-sa-600))", fontFamily: "inherit" }}>{t("login.forgotPassword")}</button>
         </div>
 
-        <button type="button" disabled={loading || !email || password.length < 4}
+        <button type="button" disabled={loading}
           onClick={async () => { setError(null); setLoading(true); try { await onLogin(email, password); } catch (e) { setError(e instanceof Error ? e.message : t("login.loginFailed")); } finally { setLoading(false); } }}
           style={{ width: "100%", padding: "15px", background: "linear-gradient(90deg, hsl(var(--color-sa-700)), hsl(var(--color-sa-600)))", border: "none", borderRadius: 14, cursor: "pointer", color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: "inherit" }}>
           {t("login.signIn")}
